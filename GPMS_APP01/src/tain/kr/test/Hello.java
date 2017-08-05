@@ -17,7 +17,7 @@
  * Copyright 2014, 2015, 2016, 2017 TAIN, Inc.
  *
  */
-package com.test;
+package tain.kr.test;
 
 /**
  * @author taincokr
