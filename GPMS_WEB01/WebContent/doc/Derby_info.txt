@@ -1,0 +1,738 @@
+#
+# ---------------------------------------------------------------------------------------
+# 2017.03.27
+
+set DERBY_HOME=jdk1.7.0_79/db
+
+1) embedded mode
+
+	네트워크 포트 필요없고 그냥 파일 그대로 쓰는 모드
+	다만 한 자바 프로세스만 접근 가능하고 다른 프로세스는 접근할 수 없다.
+	아래 jdbc URL로 username/password 없이 접근.
+	create=true 옵션은 실행시 database가 없으면 생성한다. 이미 생성되어 있으면
+	그냥 사용한다. ${databaseName} 폴더가 생성된다.
+	
+		jdbc:derby:${databaseName);create=true
+	
+2) server mode
+
+	일반적인 RDB 형태로 접근하는 모드
+	여러 클라이언트가 접속 할 수 있음.
+	server 모드로 접근하려면 서버를 실행해야 한다.
+	startNetworkServer(.bat)을 실행하면 된다.
+	
+		jdbc:derby://${host}:${port}/${databaseName};create=true
+
+3) DERBY_HOME (예. set DERBY_HOME=jdk1.7.0_79/db)
+
+	아래는 database HOME 이다.
+	
+		> java -Dderby.system.home=%TAIN_HOME%\data\derbyDB -jar XXXX.jar
+		
+	또는 DERBY_OPTS 에 추가한다.
+	
+		set DERBY_OPTS=-Dderby.system.home=%TAIN_HOME%\data\derbyDB
+
+
+
+4) embedded mode 간단한 실행
+
+
+		DOS> ij
+		ij 버전 10.8
+		
+		ij> connect 'jdbc:derby:firstdb;create=true';
+		
+		ij> create table firsttable
+		> (
+		>   id int primary key,
+		>   name varchar(12)
+		> );
+		
+		ij> insert into firsttable values
+		> (10, 'ten'),
+		> ( 11, 'eleven'),
+		> (30, 'thirty');
+		
+		ij> run 'loadTable.sql';
+		
+		ij> disconnect;
+		
+		ij> exit;
+		
+		DOS> dir
+		
+			firstdb
+
+
+
+5) server mode 접속을 위해 1527 포트 서버를 실행해야 한다.
+
+		DOS> startNetworkServer       <- 서버를 실행한다.
+		
+			Wed Mar 29 02:47:43 KST 2017 : 기본 서버 보안 정책을 사용하여 보안 관리자가 설치됩니다.
+			Wed Mar 29 02:47:43 KST 2017 : Apache Derby 네트워크 서버 - 10.8.3.2 - (1557835)이(가) 시작되어 포트 1527에서 연결을 승인할 준비가 되었습니다.
+
+		DOS> stopNetworkServer        <- 서버를 종료한다.
+		
+			Wed Mar 29 03:09:05 KST 2017 : Apache Derby 네트워크 서버 - 10.8.3.2 - (1557835)이(가) 종료되었습니다.
+		
+6) server mode 접속하는 client를 실행한다.
+
+		DOS> ij
+		ij 버전 10.8
+		
+		ij> connect 'jdbc:derby://localhost:1527/seconddb;create=true;[user=kang;password=seok;]';
+		
+		ij> create table secondtable
+		> (
+		>   id int primary key,
+		>   name varchar(12)
+		> );
+		
+		ij> insert into secondtable
+		> values
+		> (100, 'one hundred'),
+		> (200, 'two hundred'),
+		> (300, 'three hundred')
+		> ;
+
+		ij> disconnect;
+		
+		ij> exit;
+		
+		DOS> dir
+		
+			seconddb
+
+
+7) derby Help 보기
+
+		DOS> ij
+		ij 버전 10.8
+		
+		ij> help;
+		
+			지원되는 명령은 다음과 같습니다.
+			
+			PROTOCOL 'JDBC protocol' [ AS ident ];
+			-- 기본 또는 명명된 프로토콜을 설정합니다.
+			DRIVER 'class for driver'; -- 명명된 클래스를 로드합니다.
+			CONNECT 'url for database' [ PROTOCOL namedProtocol ] [ AS connectionName ];
+			-- 데이터베이스 URL에 연결합니다.
+			-- 또한 식별자를 지정할 수 있습니다.
+			SET CONNECTION connectionName; -- 지정된 연결로 전환합니다.
+			SHOW CONNECTIONS; -- 모든 연결을 나열합니다.
+			AUTOCOMMIT [ ON | OFF ]; -- 연결에 대한 자동 확약 모드를 설정합니다.
+			DISCONNECT [ CURRENT | connectionName | ALL ];
+			-- 현재 연결, 명명된 연결 또는 모든 연결을 해제합니다.
+			-- 기본값은 CURRENT입니다.
+			
+			SHOW SCHEMAS; -- 현재 데이터베이스에 있는 모든 스키마를 나열합니다.
+			SHOW [ TABLES | VIEWS | PROCEDURES | FUNCTIONS | SYNONYMS ] { IN schema };
+			                          -- 테이블, 뷰, 프로시저, 함수 또는 동의어를 나열합니다.
+			SHOW INDEXES { IN schema | FROM table };
+			                           -- 스키마의 색인 또는 테이블에 대한 색인을 나열합니다.
+			SHOW ROLES;                  -- 데이터베이스에 정의된 모든 역할을
+			                           -- 정렬하여 나열합니다.
+			SHOW ENABLED_ROLES;          -- 현재 연결에 대해 활성화된 역할을 정렬하여
+			                           -- 나열합니다(현재 사용 중인 역할을 참조하려면
+			                           -- VALUES CURRENT_ROLE 명령 사용)
+			SHOW SETTABLE_ROLES;         -- 현재 연결에 대해 설정할 수 있는
+			                           -- 역할을 정렬하여 나열합니다.
+			DESCRIBE name;               -- 명명된 테이블의 열을 나열합니다.
+			
+			COMMIT;                      -- 현재 트랜잭션을 완결합니다.
+			ROLLBACK;                    -- 현재 트랜잭션을 롤백합니다.
+			
+			PREPARE name AS 'SQL-J text'; -- SQL-J 텍스트를 준비합니다.
+			EXECUTE { name | 'SQL-J text' } [ USING { name | 'SQL-J text' } ] ;
+			                           -- USING 결과 집합 행의 매개 변수
+			                           --  값을 사용하여 문을 실행합니다.
+			REMOVE name;                 -- 명명된 이전의 준비 문을 제거합니다.
+			
+			RUN 'filename';              -- 명명된 파일에서 명령을 실행합니다.
+			
+			ELAPSEDTIME [ ON | OFF ];    -- ij에 대해 경과 시간 모드를 설정합니다.
+			MAXIMUMDISPLAYWIDTH integerValue;
+			                           -- 각 열에 대한 최대 표시 너비를
+			                           -- integerValue로 설정합니다.
+			
+			ASYNC name 'SQL-J text';     -- 다른 스레드에서 명령을 실행합니다.
+			WAIT FOR name;               -- ASYNC'd 명령 결과를 기다립니다.
+			
+			GET [SCROLL INSENSITIVE] [WITH  {HOLD | NOHOLD}] CURSOR name AS 'SQL-J query';
+			                           -- 조회에서 커서(JDBC 결과 세트)를 가져옵니다.
+			                           -- 기본값은 유지성이 있는 앞으로만 이동하는 커서입니다.
+			NEXT name;                   -- 명명된 커서에서 다음 행을 가져옵니다.
+			FIRST name;                  -- 명명된 스크롤 커서에서 첫 번째 행을 가져옵니다.
+			LAST name;                   -- 명명된 스크롤 커서에서 마지막 행을 가져옵니다.
+			PREVIOUS name;               -- 명명된 스크롤 커서에서 이전 행을 가져옵니다.
+			ABSOLUTE integer name;       -- 명명된 스크롤 커서의 위치를 절대 행 번호로 지정합니다.
+			                           -- (음수는 마지막 행으로부터의 위치를 나타냅니다.)
+			RELATIVE integer name;       -- 현재 행과 관련하여 이름 지정된 화면이동 커서를 놓습니다.
+			                           -- (정수는 행 수입니다.)
+			AFTER LAST name;             -- 이름 지정된 화면이동 커서를 마지막 행 뒤에 놓습니다.
+			BEFORE FIRST name;           -- 이름 지정된 화면이동 커서를 첫 번째 행 앞에 놓습니다.
+			GETCURRENTROWNUMBER name;    -- 이름 지정된 화면이동 커서의 현재 위치에 대한 행 번호를 리턴합니다.
+			                           -- (커서가 행에 있지 않은 경우 0이 리턴됩니다.)
+			CLOSE name;                  -- 이름 지정된 커서를 닫습니다.
+			LOCALIZEDDISPLAY [ ON | OFF ];
+			                           -- 로케일 구분 데이터 표시를 제어합니다.
+			
+			EXIT;                        -- ij를 종료합니다.
+			HELP;                        -- 이 메시지를 표시합니다.
+			
+			인식되지 않은 모든 명령은 잠재적인 SQL-J 명령으로 처리되며 직접 실행됩니다.
+
+		ij> show connections;
+		
+		ij> show tables;
+		
+		ij> set connection connection[0~#]
+		
+		
+8) eclipse에 derby 사용
+
+	아래 파일들을 구해서 eclipse의 plugins에 복사하고 eclipse를 재실행한다.
+	
+		org.apache.derby.core_10.8.2
+		org.apache.derby.plugin.doc_1.1.3
+		org.apache.derby.ui_1.1.3
+
+
+9) eclipse에서 DBMS(derby 포함) 연결 DBeaver4.0.3 설치
+
+	Help > Eclipse Marketplace > Find : DBeaver
+
+
+
+10) java 접속 정보
+
+	- Embedded Mode : 데이타베이스가 자바의 한 부분으로써 실행되고 , 같은 JVM을 공유한다. 오직 하나의 접속만 허용한다.
+		
+		connect 'jdbc:derby:spring;';
+		connect 'jdbc:derby:spring;create=true';
+		
+		private final String driver = "org.apache.derby.jdbc.EmbeddedDriver";
+		private final String dbName = "c:\\db\\springbook";
+		private final String protocol = "jdbc:derby:";
+		
+		Class.forName(driver).newInstance();
+		conn = DriverManager.getConnection(protocol + dbName);
+	
+	- Network Server : 데이탑이스가 하나의 어플리케이션으로 실행되고, TCP/IP 포트를 통한 네트워크를 통해서 클라이언트 연결을 받아 들인다.
+		
+		connect 'jdbc:derby://localhost:1527/spring';
+		connect 'jdbc:derby://localhost:1527/spring;create=true';
+		
+		private final String driver = "org.apache.derby.jdbc.ClientDriver";
+		private final String dbName = "c:\\db\\networkspringbook";
+		private final String protocol = "jdbc:derby://localhost/";
+		
+		Class.forName(driver).newInstance();
+		conn = DriverManager.getConnection(protocol + dbName);
+	 
+	이클립스에서 사용하기에는 불편하다. 사용할 때마다 Consol창이 별도로 떠야 하지만 동일한 Consol창을 사용한다.
+
+
+
+11) log4sql.jar 를 사용하여 로그에 쿼리를 출력한다.
+
+	log4j.properties 수정
+	
+		log4j.logger.com.ibatis=DEBUG
+		log4j.logger.com.ibatis.common.jdbc.SimpleDataSource=DEBUG
+		log4j.logger.com.ibatis.common.jdbc.ScriptRunner=DEBUG
+		log4j.logger.com.ibatis.sqlmap.engine.impl.SqlMapClientDelegate=DEBUG 
+
+		log4j.logger.java.sql.Connection=DEBUG
+		log4j.logger.java.sql.Statement=DEBUG
+		log4j.logger.java.sql.PreparedStatement=DEBUG
+		log4j.logger.java.sql.ResultSet=DEBUG 
+
+	server.xml 수정  -> http://log4sql.sourceforge.net/index_kr.html
+	
+		<Resource auth="Container" driverClassName="core.log.jdbc.driver.DerbyDriver">  
+
+
+
+12) java sample source
+
+		import java.sql.*;
+		
+		public class TestJavaDB {
+		    public static void main(String[] args) {
+		        Connection conn = null;
+		        Statement stmt = null;
+		        PreparedStatement pstmt = null;
+		        ResultSet rs = null;
+		        
+		        // JavaDB Embed Driver
+		        String driver = "org.apache.derby.jdbc.EmbeddedDriver";
+		        
+		        // Database name
+		        String dbName="testDB";
+		        
+		        // ConnectionURL
+		        String connectionURL = "jdbc:derby:" + dbName + ";create=true";
+		        
+		        // Create Table Query
+		        String createString = "CREATE TABLE test_table "
+		        +  "(nno INT NOT NULL GENERATED ALWAYS AS IDENTITY, " 
+		        +  " name VARCHAR(32) NOT NULL) " ;
+		        
+		        // Load Driver
+		        try {
+		            Class.forName(driver); 
+		        } catch(java.lang.ClassNotFoundException e) {
+		            e.printStackTrace();
+		        }
+		        
+		        // get Connection
+		        try {
+		            conn = DriverManager.getConnection(connectionURL);
+		        } catch(Exception e) {
+		            e.printStackTrace();
+		        }
+		        
+		        // Create Table
+		        try {
+		            stmt = conn.createStatement();
+		            System.out.println ("Creating table...");
+		            stmt.execute(createString);
+		        }  catch (Exception e)  {
+		            System.out.println("Table exist...");
+		        } finally {
+		            if (stmt!=null) try {stmt.close();} catch(Exception e2) {}
+		        }
+		        
+		        // Insert data
+		        try {
+		            pstmt = conn.prepareStatement("INSERT INTO test_table (name) VALUES (?)");
+		            pstmt.setString(1,"Donny");
+		            pstmt.executeUpdate();
+		            System.out.println("inserted...");
+		            
+		        } catch (Exception e) {
+		            System.out.println("Fuck! Insert fail!");
+		            e.printStackTrace();
+		        } finally {
+		            if (pstmt!=null) try {pstmt.close();} catch(Exception e2) {}
+		        }
+		        
+		        // Select data
+		        try {
+		            stmt = conn.createStatement();
+		            rs = stmt.executeQuery("select name from test_table");
+		            
+		            while (rs.next()) {
+		                System.out.println(" name : " + rs.getString("name"));
+		            }
+		        } catch(Exception e) {
+		            e.printStackTrace();
+		        } finally {
+		            if (rs!=null) try {rs.close();} catch(Exception e2) {}
+		            if (stmt!=null) try {stmt.close();} catch(Exception e2) {}
+		        }
+		        
+		        // close Connection
+		        try {
+		            conn.close();
+		        } catch(Exception e) {
+		            e.printStackTrace();
+		            System.out.println("Fuck! ERR!");
+		        }
+		        
+		        // DB shutdown
+		        if (driver.equals("org.apache.derby.jdbc.EmbeddedDriver")) {
+		            boolean isSuccess = false;
+		            
+		            try {
+		                DriverManager.getConnection("jdbc:derby:;shutdown=true");
+		            } catch (SQLException se)  {
+		                if ( se.getSQLState().equals("XJ015") ) {
+		                    isSuccess = true;
+		                }
+		            }
+		            
+		            if (!isSuccess) {
+		                System.out.println("Fuck! Shutdown fail!");
+		            }  else  {
+		                System.out.println("End...");
+		            }
+		        }
+		    }
+		}
+
+
+		-------------------------------------------------------------------------------------------
+		
+		/*
+		
+		   Derby - Class SimpleApp
+		
+		   Licensed to the Apache Software Foundation (ASF) under one or more
+		   contributor license agreements.  See the NOTICE file distributed with
+		   this work for additional information regarding copyright ownership.
+		   The ASF licenses this file to You under the Apache License, Version 2.0
+		   (the "License"); you may not use this file except in compliance with
+		   the License.  You may obtain a copy of the License at
+		
+		      http://www.apache.org/licenses/LICENSE-2.0
+		
+		   Unless required by applicable law or agreed to in writing, software
+		   distributed under the License is distributed on an "AS IS" BASIS,
+		   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+		   See the License for the specific language governing permissions and
+		   limitations under the License.
+		
+		 */
+		
+		import java.sql.Connection;
+		import java.sql.DriverManager;
+		import java.sql.PreparedStatement;
+		import java.sql.ResultSet;
+		import java.sql.SQLException;
+		import java.sql.Statement;
+		
+		import java.util.ArrayList;
+		import java.util.Properties;
+		
+		
+		
+		public class SimpleApp
+		{
+		    /* the default framework is embedded*/
+		    private String framework = "embedded";
+		    private String driver = "org.apache.derby.jdbc.EmbeddedDriver";
+		    private String protocol = "jdbc:derby:";
+		
+		  
+		    public static void main(String[] args)
+		    {
+		        new SimpleApp().go(args);
+		        System.out.println("SimpleApp finished");
+		    }
+		
+		 
+		    void go(String[] args)
+		    {
+		        /* parse the arguments to determine which framework is desired*/
+		        parseArguments(args);
+		
+		        System.out.println("SimpleApp starting in " + framework + " mode");
+		
+		        /* load the desired JDBC driver */
+		        loadDriver();
+		
+		    
+		        Connection conn = null;
+			
+		        ArrayList statements = new ArrayList(); // list of Statements, PreparedStatements
+		        PreparedStatement psInsert = null;
+		        PreparedStatement psUpdate = null;
+		        Statement s = null;
+		        ResultSet rs = null;
+		        try
+		        {
+		            Properties props = new Properties(); // connection properties
+		            // providing a user name and password is optional in the embedded
+		            // and derbyclient frameworks
+		            props.put("user", "user1");
+		            props.put("password", "user1");
+		
+		          
+		            //String dbName = "derbyDB"; // the name of the database
+		            String dbName = "TESTDB"; // the name of the database
+		
+		           
+		            conn = DriverManager.getConnection(protocol + dbName
+		                    + ";create=true", props);
+		
+		            System.out.println("Connected to and created database " + dbName);
+		
+		         
+		            conn.setAutoCommit(false);
+		
+		            /* Creating a statement object that we can use for running various
+		             * SQL statements commands against the database.*/
+		            s = conn.createStatement();
+		            statements.add(s);
+		
+		            // We create a table...
+		            s.execute("create table location(num int, addr varchar(40))");
+		            System.out.println("Created table location");
+		
+		            // and add a few rows...
+		
+		            // parameter 1 is num (int), parameter 2 is addr (varchar)
+		            psInsert = conn.prepareStatement(
+		                        "insert into location values (?, ?)");
+		            statements.add(psInsert);
+		
+		            psInsert.setInt(1, 1956);
+		            psInsert.setString(2, "Webster St.");
+		            psInsert.executeUpdate();
+		            System.out.println("Inserted 1956 Webster");
+		
+		            psInsert.setInt(1, 1910);
+		            psInsert.setString(2, "Union St.");
+		            psInsert.executeUpdate();
+		            System.out.println("Inserted 1910 Union");
+		
+		            psUpdate = conn.prepareStatement(
+		                        "update location set num=?, addr=? where num=?");
+		            statements.add(psUpdate);
+		
+		            psUpdate.setInt(1, 180);
+		            psUpdate.setString(2, "Grand Ave.");
+		            psUpdate.setInt(3, 1956);
+		            psUpdate.executeUpdate();
+		            System.out.println("Updated 1956 Webster to 180 Grand");
+		
+		            psUpdate.setInt(1, 300);
+		            psUpdate.setString(2, "Lakeshore Ave.");
+		            psUpdate.setInt(3, 180);
+		            psUpdate.executeUpdate();
+		            System.out.println("Updated 180 Grand to 300 Lakeshore");
+		
+		
+		          
+		            rs = s.executeQuery(
+		                    "SELECT num, addr FROM location ORDER BY num");
+		
+		        
+		
+		            int number; // street number retreived from the database
+		            boolean failure = false;
+		            if (!rs.next())
+		            {
+		                failure = true;
+		                reportFailure("No rows in ResultSet");
+		            }
+		
+		            if ((number = rs.getInt(1)) != 300)
+		            {
+		                failure = true;
+		                reportFailure(
+		                        "Wrong row returned, expected num=300, got " + number);
+		            }
+		
+		            if (!rs.next())
+		            {
+		                failure = true;
+		                reportFailure("Too few rows");
+		            }
+		
+		            if ((number = rs.getInt(1)) != 1910)
+		            {
+		                failure = true;
+		                reportFailure(
+		                        "Wrong row returned, expected num=1910, got " + number);
+		            }
+		
+		            if (rs.next())
+		            {
+		                failure = true;
+		                reportFailure("Too many rows");
+		            }
+		
+		            if (!failure) {
+		                System.out.println("Verified the rows");
+		            }
+		
+		            // delete the table
+		            s.execute("drop table location");
+		            System.out.println("Dropped table location");
+		
+		            /*
+		               We commit the transaction. Any changes will be persisted to
+		               the database now.
+		             */
+		            conn.commit();
+		            System.out.println("Committed the transaction");
+		
+		       
+		
+		            if (framework.equals("embedded"))
+		            {
+		                try
+		                {
+		                    // the shutdown=true attribute shuts down Derby
+		                    DriverManager.getConnection("jdbc:derby:;shutdown=true");
+		
+		                  
+		                }
+		                catch (SQLException se)
+		                {
+		                    if (( (se.getErrorCode() == 50000)
+		                            && ("XJ015".equals(se.getSQLState()) ))) {
+		                        // we got the expected exception
+		                        System.out.println("Derby shut down normally");
+		                        // Note that for single database shutdown, the expected
+		                        // SQL state is "08006", and the error code is 45000.
+		                    } else {
+		                        // if the error code or SQLState is different, we have
+		                        // an unexpected exception (shutdown failed)
+		                        System.err.println("Derby did not shut down normally");
+		                        printSQLException(se);
+		                    }
+		                }
+		            }
+		        }
+		        catch (SQLException sqle)
+		        {
+		            printSQLException(sqle);
+		        } finally {
+		            // release all open resources to avoid unnecessary memory usage
+		
+		            // ResultSet
+		            try {
+		                if (rs != null) {
+		                    rs.close();
+		                    rs = null;
+		                }
+		            } catch (SQLException sqle) {
+		                printSQLException(sqle);
+		            }
+		
+		            // Statements and PreparedStatements
+		            int i = 0;
+		            while (!statements.isEmpty()) {
+		                // PreparedStatement extend Statement
+		                Statement st = (Statement)statements.remove(i);
+		                try {
+		                    if (st != null) {
+		                        st.close();
+		                        st = null;
+		                    }
+		                } catch (SQLException sqle) {
+		                    printSQLException(sqle);
+		                }
+		            }
+		
+		            //Connection
+		            try {
+		                if (conn != null) {
+		                    conn.close();
+		                    conn = null;
+		                }
+		            } catch (SQLException sqle) {
+		                printSQLException(sqle);
+		            }
+		        }
+		    }
+		
+		    
+		    private void loadDriver() {
+		      
+		        try {
+		            Class.forName(driver).newInstance();
+		            System.out.println("Loaded the appropriate driver");
+		        } catch (ClassNotFoundException cnfe) {
+		            System.err.println("\nUnable to load the JDBC driver " + driver);
+		            System.err.println("Please check your CLASSPATH.");
+		            cnfe.printStackTrace(System.err);
+		        } catch (InstantiationException ie) {
+		            System.err.println(
+		                        "\nUnable to instantiate the JDBC driver " + driver);
+		            ie.printStackTrace(System.err);
+		        } catch (IllegalAccessException iae) {
+		            System.err.println(
+		                        "\nNot allowed to access the JDBC driver " + driver);
+		            iae.printStackTrace(System.err);
+		        }
+		    }
+		
+		  
+		    private void reportFailure(String message) {
+		        System.err.println("\nData verification failed:");
+		        System.err.println('\t' + message);
+		    }
+		
+		  
+		    public static void printSQLException(SQLException e)
+		    {
+		        // Unwraps the entire exception chain to unveil the real cause of the
+		        // Exception.
+		        while (e != null)
+		        {
+		            System.err.println("\n----- SQLException -----");
+		            System.err.println("  SQL State:  " + e.getSQLState());
+		            System.err.println("  Error Code: " + e.getErrorCode());
+		            System.err.println("  Message:    " + e.getMessage());
+		            // for stack traces, refer to derby.log or uncomment this:
+		            //e.printStackTrace(System.err);
+		            e = e.getNextException();
+		        }
+		    }
+		
+		   
+		    private void parseArguments(String[] args)
+		    {
+		        if (args.length > 0) {
+		            if (args[0].equalsIgnoreCase("jccjdbcclient"))
+		            {
+		                framework = "jccjdbc";
+		                driver = "com.ibm.db2.jcc.DB2Driver";
+		                protocol = "jdbc:derby:net://localhost:1527/";
+		            }
+		            else if (args[0].equalsIgnoreCase("derbyclient"))
+		            {
+		                framework = "derbyclient";
+		                driver = "org.apache.derby.jdbc.ClientDriver";
+		                protocol = "jdbc:derby://localhost:1527/";
+		            }
+		        }
+		    }
+		}
+				
+		
+		
+13) 날짜관련 함수
+
+		SELECT CURRENT_DATE AS TT FROM SYSIBM.SYSDUMMY1;
+		
+		SELECT CURRENT_TIME FROM SYSIBM.SYSDUMMY1;
+		
+		SELECT CURRENT_TIMESTAMP FROM SYSIBM.SYSDUMMY1;
+		
+		SELECT YEAR(CURRENT_TIMESTAMP) FROM SYSIBM.SYSDUMMY1;
+		
+		SELECT MONTH(CURRENT_TIMESTAMP) FROM SYSIBM.SYSDUMMY1;
+
+		SELECT DAY(CURRENT_TIMESTAMP) FROM SYSIBM.SYSDUMMY1;
+
+		SELECT DATE('2008-01-01') FROM SYSIBM.SYSDUMMY1;
+		
+		SELECT TIME('10:10:10') FROM SYSIBM.SYSDUMMY1;
+		
+		SELECT TIMESTAMP('2008-01-01 10:10:10.000') AS TIME_STAMP FROM SYSIBM.SYSDUMMY1;
+		
+14) derby.properties
+
+	set DERBY_OPTS=-Dderby.system.home=%TAIN_HOME%\data\derbyDB
+	-Dderby.system.home=%TAIN_HOME%\data\derbyDB 위치에 아래와 같은 내용으로 생성한다.
+	
+		# 호스트정보
+		derby.drda.host=127.0.0.1
+		# 서버 포트 설정
+		derby.drda.portNumber=1110
+
+		# 쓰레드 최대 수
+		derby.drda.maxThreads=50
+		# 쓰레드 최소 수
+		derby.drda.minThreads=10
+		# 계정 인증 여부
+
+		derby.connection.requireAuthentication=true
+		# 인증 방식
+		derby.authentication.provider=BUILTIN
+		# user.[계정]=[비밀번호]
+		derby.user.kang=kang123!
+
+#
+# ---------------------------------------------------------------------------------------
+# 2017.
+
