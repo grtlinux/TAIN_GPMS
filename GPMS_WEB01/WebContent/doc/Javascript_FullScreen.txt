@@ -1,0 +1,227 @@
+------------------------------------------------------------------------------------------------------------------
+[ chrome 시작옵션 사이트 ]
+
+	http://peter.sh/experiments/chromium-command-line-switches/
+
+
+"C:\[ KANG ]\TOOLS\Chrome\Application\chrome.exe" -kiosk -fullscreen http://www.naver.com
+
+"C:\[ KANG ]\TOOLS\Chrome_x32\Application\chrome.exe" -kiosk -fullscreen http://www.naver.com
+
+
+------------------------------------------------------------------------------------------------------------------
+
+// full-screen support 
+if (document.fullscreenEnabled || 
+  document.webkitFullscreenEnabled || 
+  document.msFullscreenEnabled ||
+  document.mozFullScreenEnabled) {
+        // full-screen 
+        if (!document.fullscreenElement &&
+            !document.webkitFullscreenElement &&
+            !document.msFullscreenElement &&
+            !document.mozFullScreenElement) { 
+              if (this.requestFullscreen) {
+                  this.requestFullscreen();
+              } else if (this.webkitRequestFullscreen) {
+                this.webkitRequestFullscreen();
+              } else if (this.msRequestFullscreen) {
+                this.msRequestFullscreen();
+              } else if (this.mozRequestFullScreen) {
+                this.mozRequestFullScreen();
+              }
+          }
+ 
+        // normal-screen 
+        else {  
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+              document.msExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+              document.mozCancelFullScreen();
+            }
+      }
+    } 
+// not support 
+else {
+      // in reality you should use fallback code here
+      alert("Your browser doesn’t support the fullscreen API");
+}
+
+
+
+------------------------------------------------------------------------------------------------------------------
+
+<script type="text/javascript">
+    function launchFullscreen() {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) {    // Firefox
+            document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {  // Chrome & Safari
+            document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) { //IE
+            document.documentElement.msRequestFullscreen();
+        }
+    }
+</script>
+<button onclick="launchFullscreen();">Full Screen </button>
+
+
+<script type="text/javascript">
+    function launchFullscreen(element) {
+        var img = document.getElementById("f-img");
+        if (element.requestFullscreen) {
+            img.requestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+            img.mozRequestFullScreen();                    // Firefox
+        } else if (element.webkitRequestFullscreen) {
+            img.webkitRequestFullscreen();                // Chrome & Safari
+        } else if (element.msRequestFullscreen) {
+            img.msRequestFullscreen();                    // IE
+        }
+    }
+</script>
+<img src="/html5/img/java.png" onclick="launchFullscreen(document.documentElement);" id="f-img" />
+
+
+
+------------------------------------------------------------------------------------------------------------------
+
+	element.requestFullscreen();
+	
+	Document.getElementById("MyCanvas").requestFullscreen();
+	
+	document.cancelFullscreen()
+	
+	Document.fullScreen
+	
+	document.fullScreenElement
+	
+	
+
+------------------------------------------------------------------------------------------------------------------
+
+function startFS(element) {
+
+	if (element.requestFullScreen) {
+
+		element.requestFullScreen();
+
+	} else if (element.webkitRequestFullScreen ) {
+
+		element.webkitRequestFullScreen();
+
+	} else if (element.mozRequestFullScreen) {
+
+		element.mozRequestFullScreen();
+
+	} else if (element.msRequestFullscreen) {
+
+		element.msRequestFullscreen(); // IE
+	}
+}
+
+
+function exitFS(element) {		
+
+	if (element.exitFullscreen){
+
+		element.exitFullscreen();
+
+	} else if (element.cancelFullScreen) {
+
+		element.cancelFullScreen();
+
+	} else if (element.webkitCancelFullScreen ) {
+
+		element.webkitCancelFullScreen();
+
+	} else if (element.mozCancelFullScreen) {
+
+		element.mozCancelFullScreen();
+
+	} else if (element.msExitFullscreen) {
+
+        element.msExitFullscreen(); // IE        
+	}
+}
+
+// IE	
+function max() {
+
+    var wscript = new ActiveXObject("Wscript.shell");
+
+    wscript.SendKeys("{F11}");
+}
+
+max();
+
+
+
+<button onclick="startFS(document)">Fullscreen</button>
+
+<button onclick="exitFS(document)">exit</button>
+
+
+
+------------------------------------------------------------------------------------------------------------------
+
+내경우는 canvas를 전체 화면으로 만들어 줄려고 하는데 또 x같이 브라우저별로 틀리게 표시된다
+
+그래서 css로 fullscreen시 변경될 속성을 넣어주어야 한느데  아래와 같이 canvas의경우 높이를 100vh 로 변경해주면 넓이도 비율대로
+맞추어 준다 이건 높이 기준으로 넓이도 변하게 되는데 ie 엣지와 ie11의 경우는 넓이가 화면에 맞추어 꽉차보이도록 늘어난다
+이럴 경우 다른 방식으로 설정해주어야 한다
+컨테이너를 만들고 컨테이너를 100%해주고 canvas의 크기를 수동으로 조정해준담에..... 중앙으로맞추고... 
+
+	<style>
+	
+	#canvas:-webkit-full-screen {
+	    height: 100vh;
+	}
+	
+	#canvas:-moz-full-screen {
+	    height: 100vh;
+	}
+	
+	#canvas:-ms-fullscreen {
+	   height: 100vh;
+	}
+	
+	#canvas:fullscreen {
+	   height: 100vh;
+	}
+	
+	</style>
+
+동영상을 실행할 때 전체 화면으로 실행이 가능하게 한다.
+
+
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+
+
+
+
